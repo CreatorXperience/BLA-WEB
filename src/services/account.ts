@@ -5,23 +5,62 @@ import type { Address, AddressInput } from "@/types/address";
 import type { Product } from "@/types/product";
 import type { WishlistItem } from "@/types/misc";
 
+/** Map the backend Order fields to the client Order shape. */
+function mapOrder(raw: Record<string, unknown>): Order {
+  const items = Array.isArray(raw.items)
+    ? (raw.items as Array<Record<string, unknown>>).map((i) => ({
+        id: String(i.id ?? ""),
+        productId: i.productId != null ? String(i.productId) : undefined,
+        variantId: i.variantId != null ? String(i.variantId) : undefined,
+        productName: String(i.productName ?? i.name ?? "Item"),
+        sku: i.sku != null ? String(i.sku) : undefined,
+        imageUrl: i.imageUrl != null ? String(i.imageUrl) : undefined,
+        color: i.color != null ? String(i.color) : undefined,
+        size: i.size != null ? String(i.size) : undefined,
+        quantity: Number(i.quantity ?? 1),
+        unitPrice: Number(i.unitPrice ?? i.price ?? 0),
+        lineTotal: Number(i.totalPrice ?? i.lineTotal ?? 0),
+      }))
+    : [];
+  return {
+    id: String(raw.id),
+    orderNumber: String(raw.orderNumber),
+    status: raw.status as Order["status"],
+    items,
+    subtotal: Number(raw.subtotal ?? 0),
+    discount: Number(raw.discountTotal ?? 0),
+    shippingRate: Number(raw.shippingTotal ?? 0),
+    tax: Number(raw.taxTotal ?? 0),
+    total: Number(raw.grandTotal ?? raw.total ?? 0),
+    currency: String(raw.currency ?? "NGN"),
+    shippingAddress: raw.shippingAddress as Order["shippingAddress"],
+    billingAddress: raw.billingAddress as Order["billingAddress"],
+    trackingNumber: raw.trackingNumber != null ? String(raw.trackingNumber) : null,
+    timeline: raw.timeline as Order["timeline"],
+    couponCode: raw.couponCode != null ? String(raw.couponCode) : null,
+    createdAt: String(raw.createdAt),
+  };
+}
+
 export const ordersService = {
   async list(page = 1, perPage = 10): Promise<OrderPaged> {
-    const res = await apiClient<ApiResponse<{ data: Order[]; total: number; page: number; perPage: number }>>(
-      `/me/orders?page=${page}&perPage=${perPage}`,
-      { auth: true },
-    );
-    return unwrap(res);
+    const res = await apiClient<ApiResponse<Array<Record<string, unknown>>>>(`/me/orders?page=${page}&perPage=${perPage}`, { auth: true });
+    return {
+      data: (res.data ?? []).map(mapOrder),
+      total: res.meta?.pagination?.total ?? (res.data ?? []).length,
+      page: res.meta?.pagination?.page ?? page,
+      perPage: res.meta?.pagination?.perPage ?? perPage,
+    };
   },
 
   async byId(id: string): Promise<Order> {
-    const res = await apiClient<ApiResponse<Order>>(`/me/orders/${id}`, { auth: true });
-    return unwrap(res);
+    const res = await apiClient<ApiResponse<Record<string, unknown>>>(`/me/orders/${id}`, { auth: true });
+    return mapOrder(res.data);
   },
 
   async track(orderNumber: string): Promise<Order> {
-    const res = await apiClient<ApiResponse<Order>>(`/orders/track/${orderNumber}`);
-    return unwrap(res);
+    const res = await apiClient<ApiResponse<Record<string, unknown>>>(`/orders/track/${orderNumber}`);
+    return mapOrder(res.data);
   },
 
   async invoice(id: string): Promise<Blob> {
