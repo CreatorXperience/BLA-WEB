@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -77,9 +77,8 @@ export function CheckoutClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [country]);
 
-  const payload = useMemo<CheckoutPayload | null>(() => {
+  const buildPayload = (values: Values): CheckoutPayload | null => {
     if (!cart || cart.items.length === 0) return null;
-    const values = form.getValues();
     return {
       shippingAddress: {
         firstName: values.firstName,
@@ -96,9 +95,10 @@ export function CheckoutClient() {
       shippingMethodId: values.shippingMethodId,
       customerNote: values.note,
     };
-  }, [cart, form]);
+  };
 
-  const onSubmit = async () => {
+  const onSubmit = async (values: Values) => {
+    const payload = buildPayload(values);
     if (!payload) return;
     setPlacing(true);
     try {
