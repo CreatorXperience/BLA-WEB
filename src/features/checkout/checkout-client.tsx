@@ -4,14 +4,16 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Lock, ShieldCheck } from "lucide-react";
+import { Lock, MapPin, ShieldCheck } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
 import { useAuthStore } from "@/store/auth-store";
 import { checkoutService, paymentsService } from "@/services/checkout";
+import { addressesService } from "@/services/account";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -19,6 +21,7 @@ import { ErrorText } from "@/components/shared/form-utils";
 import { formatPrice } from "@/lib/utils";
 import { productImageUrl } from "@/constants/imagery";
 import { countryToCode } from "@/lib/countries";
+import type { Address } from "@/types/address";
 import type { CheckoutPayload, PaymentProvider, ShippingOption } from "@/types/checkout";
 
 const schema = z.object({
@@ -48,6 +51,14 @@ export function CheckoutClient() {
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [placing, setPlacing] = useState(false);
   const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>("paystack");
+  const [selectedAddressId, setSelectedAddressId] = useState<string | undefined>();
+
+  const { data: savedAddresses } = useQuery({
+    queryKey: ["me", "addresses"],
+    queryFn: addressesService.list,
+    enabled: Boolean(user),
+    retry: 1,
+  });
 
   const form = useForm<Values>({
     resolver: zodResolver(schema),
@@ -79,10 +90,24 @@ export function CheckoutClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [country]);
 
+  const applyAddress = (address: Address) => {
+    setSelectedAddressId(address.id);
+    form.setValue("firstName", address.firstName);
+    form.setValue("lastName", address.lastName);
+    form.setValue("phone", address.phone ?? "");
+    form.setValue("line1", address.line1);
+    form.setValue("line2", address.line2 ?? "");
+    form.setValue("city", address.city);
+    form.setValue("state", address.state);
+    form.setValue("postalCode", address.postalCode ?? "");
+    form.setValue("country", address.country === "NG" ? "Nigeria" : address.country);
+  };
+
   const buildPayload = (values: Values): CheckoutPayload | null => {
     if (!cart || cart.items.length === 0) return null;
     return {
       shippingAddress: {
+        addressId: selectedAddressId,
         firstName: values.firstName,
         lastName: values.lastName,
         phone: values.phone?.trim() || undefined,
@@ -159,6 +184,44 @@ export function CheckoutClient() {
               {form.formState.errors.email ? <ErrorText>{form.formState.errors.email.message}</ErrorText> : null}
             </div>
           </section>
+
+          {user && savedAddresses && savedAddresses.length > 0 ? (
+            <section>
+              <h2 className="text-sm uppercase tracking-[0.2em] text-muted">Saved addresses</h2>
+              <div className="mt-4 space-y-3">
+                {savedAddresses.map((address) => (
+                  <label
+                    key={address.id}
+                    className={`flex cursor-pointer items-start gap-4 border p-5 transition-colors ${
+                      selectedAddressId === address.id ? "border-ink" : "border-line hover:border-ink/40"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="saved-address"
+                      className="mt-1 size-4 accent-ink"
+                      checked={selectedAddressId === address.id}
+                      onChange={() => applyAddress(address)}
+                    />
+                    <div className="text-sm">
+                      <p className="text-ink">
+                        {address.label ? <span className="mr-2 text-xs uppercase tracking-wider text-muted">{address.label}</span> : null}
+                        {address.firstName} {address.lastName}
+                      </p>
+                      <p className="mt-0.5 text-xs text-muted">
+                        {[address.line1, address.line2, address.city, address.state, address.postalCode, address.country]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </p>
+                    </div>
+                  </label>
+                ))}
+                <p className="flex items-center gap-2 text-xs text-muted">
+                  <MapPin className="size-3.5" /> Select an address to reuse it, or enter a new one below.
+                </p>
+              </div>
+            </section>
+          ) : null}
 
           <section>
             <h2 className="text-sm uppercase tracking-[0.2em] text-muted">Shipping address</h2>

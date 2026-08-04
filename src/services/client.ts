@@ -1,5 +1,5 @@
 import { SITE } from "@/constants/site";
-import { CART_TOKEN_KEY } from "@/constants/site";
+import { CART_TOKEN_KEY, ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/constants/site";
 import { ApiError, type ApiResponse } from "@/types/api";
 
 export interface RequestOptions extends Omit<RequestInit, "body"> {
@@ -76,6 +76,10 @@ async function refreshAccessToken(): Promise<boolean> {
     const body = (await res.json()) as ApiResponse<{ tokens: { accessToken: string; refreshToken: string } }>;
     setTokens(body.data.tokens.accessToken, body.data.tokens.refreshToken);
     refreshToken = body.data.tokens.refreshToken;
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(ACCESS_TOKEN_KEY, body.data.tokens.accessToken);
+      window.localStorage.setItem(REFRESH_TOKEN_KEY, body.data.tokens.refreshToken);
+    }
     return true;
   } catch {
     return false;

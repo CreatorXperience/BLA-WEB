@@ -19,6 +19,7 @@ export interface Address {
 }
 
 export interface AddressInput {
+  addressId?: string;
   label?: string;
   type?: AddressType;
   firstName: string;
