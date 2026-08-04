@@ -17,7 +17,13 @@ const schema = z
     firstName: z.string().min(1, "Enter your first name"),
     lastName: z.string().min(1, "Enter your last name"),
     email: z.string().email("Enter a valid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(72, "Password must be at most 72 characters")
+      .regex(/[a-z]/, "Password must contain a lowercase letter")
+      .regex(/[A-Z]/, "Password must contain an uppercase letter")
+      .regex(/[0-9]/, "Password must contain a number"),
     confirm: z.string(),
   })
   .refine((data) => data.password === data.confirm, {

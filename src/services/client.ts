@@ -34,8 +34,28 @@ async function parseError(response: Response): Promise<ApiError> {
   let code: string | undefined;
   let details: unknown;
   try {
-    const body = (await response.json()) as { message?: string; error?: { code?: string; details?: unknown } };
-    if (body.message) message = body.message;
+    const body = (await response.json()) as {
+      message?: string;
+      error?: {
+        code?: string;
+        details?: unknown;
+        name?: string;
+        issues?: Array<{ message?: string; path?: Array<string | number> }>;
+      };
+    };
+    if (body.message) {
+      message = body.message;
+    } else if (Array.isArray(body.error?.issues) && body.error.issues.length > 0) {
+      // zod-validator failure shape: { success:false, error:{ issues:[{message,path}] } }
+      message = body.error.issues.map((issue) => issue.message).filter(Boolean).join("; ");
+    } else {
+      const fieldErrors = (body.error?.details as { fieldErrors?: Record<string, string[] | undefined> } | undefined)
+        ?.fieldErrors;
+      if (fieldErrors) {
+        const parts = Object.values(fieldErrors).flat().filter(Boolean);
+        if (parts.length > 0) message = parts.join("; ");
+      }
+    }
     code = body.error?.code;
     details = body.error?.details;
   } catch {
