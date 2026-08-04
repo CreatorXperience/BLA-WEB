@@ -13,12 +13,16 @@ export const checkoutService = {
   },
 
   async shippingOptions(country: string): Promise<ShippingOption[]> {
-    const res = await apiClient<ApiResponse<ShippingOption[]>>("/checkout/shipping-options", {
+    const res = await apiClient<ApiResponse<{ methods: ShippingOption[] }>>("/checkout/shipping-options", {
       method: "POST",
       body: { country },
       cartToken: true,
     });
-    return unwrap(res);
+    return unwrap(res).methods.map((m) => ({
+      ...m,
+      baseRate: Number(m.baseRate),
+      freeAbove: m.freeAbove == null ? null : Number(m.freeAbove),
+    }));
   },
 
   async placeOrder(payload: CheckoutPayload): Promise<PlacedOrder> {

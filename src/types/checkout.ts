@@ -1,19 +1,14 @@
 import type { AddressInput } from "./address";
 
-export interface CheckoutLine {
-  variantId: string;
-  quantity: number;
-}
-
 export interface CheckoutPayload {
-  items: CheckoutLine[];
   shippingAddress: AddressInput;
   billingAddress?: AddressInput;
+  billingSameAsShipping?: boolean;
   email: string;
   couponCode?: string;
   shippingMethodId?: string;
   currency?: string;
-  note?: string;
+  customerNote?: string;
 }
 
 export interface CheckoutPreview {

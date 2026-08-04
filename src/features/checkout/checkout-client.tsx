@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { ErrorText } from "@/components/shared/form-utils";
 import { formatPrice } from "@/lib/utils";
 import { productImageUrl } from "@/constants/imagery";
+import { countryToCode } from "@/lib/countries";
 import type { CheckoutPayload, ShippingOption } from "@/types/checkout";
 
 const schema = z.object({
@@ -80,21 +81,20 @@ export function CheckoutClient() {
     if (!cart || cart.items.length === 0) return null;
     const values = form.getValues();
     return {
-      items: cart.items.map((item) => ({ variantId: item.variantId ?? item.id, quantity: item.quantity })),
       shippingAddress: {
         firstName: values.firstName,
         lastName: values.lastName,
-        phone: values.phone,
+        phone: values.phone?.trim() || undefined,
         line1: values.line1,
-        line2: values.line2,
+        line2: values.line2?.trim() || undefined,
         city: values.city,
         state: values.state,
-        postalCode: values.postalCode,
-        country: values.country,
+        postalCode: values.postalCode?.trim() || undefined,
+        country: countryToCode(values.country),
       },
       email: values.email,
       shippingMethodId: values.shippingMethodId,
-      note: values.note,
+      customerNote: values.note,
     };
   }, [cart, form]);
 
