@@ -30,7 +30,7 @@ export const checkoutService = {
       method: "POST",
       body: payload,
       cartToken: true,
-      auth: false,
+      auth: true,
     });
     return unwrap(res);
   },

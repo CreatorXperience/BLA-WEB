@@ -19,7 +19,7 @@ import { ErrorText } from "@/components/shared/form-utils";
 import { formatPrice } from "@/lib/utils";
 import { productImageUrl } from "@/constants/imagery";
 import { countryToCode } from "@/lib/countries";
-import type { CheckoutPayload, ShippingOption } from "@/types/checkout";
+import type { CheckoutPayload, PaymentProvider, ShippingOption } from "@/types/checkout";
 
 const schema = z.object({
   email: z.string().email("Enter a valid email address"),
@@ -41,11 +41,13 @@ type Values = z.infer<typeof schema>;
 export function CheckoutClient() {
   const router = useRouter();
   const cart = useCartStore((s) => s.cart);
+  const clearCart = useCartStore((s) => s.clear);
   const user = useAuthStore((s) => s.user);
 
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[] | null>(null);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [placing, setPlacing] = useState(false);
+  const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>("paystack");
 
   const form = useForm<Values>({
     resolver: zodResolver(schema),
@@ -104,8 +106,9 @@ export function CheckoutClient() {
     try {
       const placed = await checkoutService.placeOrder(payload);
       const orderId = placed.order.id;
+      clearCart();
       try {
-        const init = await paymentsService.initialize(orderId, "paystack");
+        const init = await paymentsService.initialize(orderId, paymentProvider);
         if (init.authorizationUrl) {
           window.location.href = init.authorizationUrl;
           return;
@@ -244,6 +247,28 @@ export function CheckoutClient() {
               <p className="mt-4 text-sm text-muted">We could not load shipping options for this country.</p>
             )}
             {form.formState.errors.shippingMethodId ? <ErrorText>{form.formState.errors.shippingMethodId.message}</ErrorText> : null}
+          </section>
+
+          <section>
+            <h2 className="text-sm uppercase tracking-[0.2em] text-muted">Payment method</h2>
+            <div className="mt-4 space-y-3">
+              {(["paystack", "flutterwave"] as PaymentProvider[]).map((provider) => (
+                <label
+                  key={provider}
+                  className={`flex cursor-pointer items-center gap-4 border p-5 transition-colors ${
+                    paymentProvider === provider ? "border-ink" : "border-line hover:border-ink/40"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    className="size-4 accent-ink"
+                    checked={paymentProvider === provider}
+                    onChange={() => setPaymentProvider(provider)}
+                  />
+                  <span className="text-sm capitalize text-ink">{provider}</span>
+                </label>
+              ))}
+            </div>
           </section>
 
           <section>
