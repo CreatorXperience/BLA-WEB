@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,12 +11,14 @@ import { formatPrice } from "@/lib/utils";
 import { productImageUrl } from "@/constants/imagery";
 import { useUIStore } from "@/store/ui-store";
 import { useCartStore } from "@/store/cart-store";
+import { qk } from "@/hooks/use-catalog";
+import { productService } from "@/services/products";
 import type { Product } from "@/types/product";
 import { toast } from "sonner";
 
 function uniqueValues(variants: Product["variants"], key: "color" | "size"): string[] {
   const set = new Set<string>();
-  for (const v of variants) {
+  for (const v of variants ?? []) {
     const value = v[key];
     if (value) set.add(value);
   }
@@ -23,11 +26,18 @@ function uniqueValues(variants: Product["variants"], key: "color" | "size"): str
 }
 
 export function QuickView() {
-  const product = useUIStore((s) => s.quickView?.product ?? null);
+  const passed = useUIStore((s) => s.quickView?.product ?? null);
   const close = useUIStore((s) => s.closeQuickView);
   const openCart = useUIStore((s) => s.openCart);
   const addItem = useCartStore((s) => s.addItem);
   const isUpdating = useCartStore((s) => s.isUpdating);
+
+  const { data: fullProduct } = useQuery({
+    queryKey: qk.product(passed?.slug ?? ""),
+    queryFn: () => productService.bySlug((passed as Product).slug),
+    enabled: Boolean(passed) && (passed?.variants?.length ?? 0) === 0,
+  });
+  const product = fullProduct ?? passed;
 
   const [color, setColor] = useState<string | null>(null);
   const [size, setSize] = useState<string | null>(null);
@@ -42,10 +52,11 @@ export function QuickView() {
 
   const variant = useMemo(() => {
     if (!product) return null;
+    const variants = product.variants ?? [];
     return (
-      product.variants.find((v) => (selectedColor ? v.color === selectedColor : true) && (selectedSize ? v.size === selectedSize : true) && v.isActive) ??
-      product.variants.find((v) => v.isDefault) ??
-      product.variants[0] ??
+      variants.find((v) => (selectedColor ? v.color === selectedColor : true) && (selectedSize ? v.size === selectedSize : true) && v.isActive) ??
+      variants.find((v) => v.isDefault) ??
+      variants[0] ??
       null
     );
   }, [product, selectedColor, selectedSize]);
@@ -55,7 +66,7 @@ export function QuickView() {
       toast.error("Please select a size");
       return;
     }
-    if (product.variants.length > 0 && !selectedSize && sizes.length > 0) {
+    if ((product.variants?.length ?? 0) > 0 && !selectedSize && sizes.length > 0) {
       toast.error("Please select a size");
       return;
     }

@@ -27,7 +27,7 @@ export const cartService = {
   async addItem(input: AddToCartInput): Promise<Cart> {
     const res = await apiClient<ApiResponse<Cart>>("/cart/items", {
       method: "POST",
-      body: input,
+      body: { variantId: input.variantId, quantity: input.quantity },
       cartToken: true,
     });
     return unwrap(res);
