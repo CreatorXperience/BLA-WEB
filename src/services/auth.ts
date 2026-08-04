@@ -1,6 +1,6 @@
 import { apiClient, unwrap } from "./client";
 import type { ApiResponse } from "@/types/api";
-import type { AuthSession, User } from "@/types/user";
+import type { AuthSession, AuthTokens, User } from "@/types/user";
 
 export interface RegisterInput {
   email: string;
@@ -14,21 +14,31 @@ export interface LoginInput {
   password: string;
 }
 
+interface AuthResponse {
+  user: User;
+  tokens: AuthTokens;
+}
+
+function toSession(res: ApiResponse<AuthResponse>): AuthSession {
+  const { user, tokens } = unwrap(res);
+  return { user, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
+}
+
 export const authService = {
   async register(input: RegisterInput): Promise<AuthSession> {
-    const res = await apiClient<ApiResponse<AuthSession>>("/auth/register", {
+    const res = await apiClient<ApiResponse<AuthResponse>>("/auth/register", {
       method: "POST",
       body: input,
     });
-    return unwrap(res);
+    return toSession(res);
   },
 
   async login(input: LoginInput): Promise<AuthSession> {
-    const res = await apiClient<ApiResponse<AuthSession>>("/auth/login", {
+    const res = await apiClient<ApiResponse<AuthResponse>>("/auth/login", {
       method: "POST",
       body: input,
     });
-    return unwrap(res);
+    return toSession(res);
   },
 
   async logout(refreshToken?: string): Promise<void> {

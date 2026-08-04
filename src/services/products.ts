@@ -15,11 +15,11 @@ function queryString(params: Record<string, string | number | boolean | undefine
 
 export const productService = {
   async list(query: ProductQuery): Promise<ProductListResult> {
-    const res = await apiClient<ApiResponse<{ items: Product[]; nextCursor: string | null; total?: number }>>(
-      `/products${queryString({ ...query })}`,
-    );
+    const res = await apiClient<
+      ApiResponse<{ data: Product[]; nextCursor: string | null; total?: number }>
+    >(`/products${queryString({ ...query })}`);
     const data = unwrap(res);
-    return { items: data.items, nextCursor: data.nextCursor, hasMore: Boolean(data.nextCursor), total: data.total };
+    return { items: data.data, nextCursor: data.nextCursor, hasMore: Boolean(data.nextCursor), total: data.total };
   },
 
   async bySlug(slug: string): Promise<Product> {
@@ -55,12 +55,13 @@ export const productService = {
 
 export const collectionService = {
   async list(): Promise<Collection[]> {
-    const res = await apiClient<ApiResponse<Collection[]>>("/collections");
-    return unwrap(res);
+    const res = await apiClient<ApiResponse<Collection[] | { data: Collection[] }>>("/collections");
+    const data = unwrap(res);
+    return Array.isArray(data) ? data : data.data;
   },
 
   async bySlug(slug: string): Promise<Collection> {
-    const res = await apiClient<ApiResponse<Collection>>(`/collections/${slug}`);
+    const res = await apiClient<ApiResponse<Collection>>(`/collections/slug/${slug}`);
     return unwrap(res);
   },
 
@@ -76,7 +77,7 @@ export const categoryService = {
   },
 
   async bySlug(slug: string): Promise<Category> {
-    const res = await apiClient<ApiResponse<Category>>(`/categories/${slug}`);
+    const res = await apiClient<ApiResponse<Category>>(`/categories/slug/${slug}`);
     return unwrap(res);
   },
 };
