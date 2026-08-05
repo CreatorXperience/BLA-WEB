@@ -53,7 +53,7 @@ export function CheckoutSuccess() {
     return () => {
       cancelled = true;
     };
-  }, [reference, fetchCart]);
+  }, [reference, orderNumber, fetchCart]);
 
   if (state === "checking") {
     return (
@@ -111,7 +111,7 @@ export function CheckoutSuccess() {
       <div className="container-lux flex min-h-[70vh] flex-col items-center justify-center py-20 text-center">
         <AlertTriangle className="size-8 text-amber-600" />
         <p className="eyebrow mt-8">Payment not confirmed</p>
-        <h1 className="editorial-title mt-3 text-ink">We couldn't confirm your payment</h1>
+        <h1 className="editorial-title mt-3 text-ink">We could not confirm your payment</h1>
         <p className="mt-5 max-w-md text-sm leading-relaxed text-muted">
           {orderNumber ? (
             <>
@@ -119,7 +119,7 @@ export function CheckoutSuccess() {
               payment page but did not see a confirmation, your items are still in your bag.
             </>
           ) : (
-            "We couldn't confirm any recent payment. Your items are still in your bag."
+            "We could not confirm any recent payment. Your items are still in your bag."
           )}
         </p>
         <div className="mt-10 flex flex-wrap justify-center gap-3">
