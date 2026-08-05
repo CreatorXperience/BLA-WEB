@@ -8,7 +8,7 @@ import { paymentsService } from "@/services/checkout";
 import { useCartStore } from "@/store/cart-store";
 import { Button } from "@/components/ui/button";
 
-type PaymentState = "checking" | "success" | "failed" | "pending";
+type PaymentState = "checking" | "success" | "failed" | "pending" | "unconfirmed";
 
 export function CheckoutSuccess() {
   const params = useSearchParams();
@@ -19,7 +19,15 @@ export function CheckoutSuccess() {
 
   useEffect(() => {
     if (!reference) {
-      setState("success");
+      // No reference to verify. Only treat as confirmed when there's not even an
+      // order (a stray/non-payment visit). Never claim success for an order whose
+      // payment we could not confirm — the gateway was likely cancelled/abandoned.
+      if (orderNumber) {
+        setState("unconfirmed");
+        void fetchCart().catch(() => undefined);
+      } else {
+        setState("success");
+      }
       return;
     }
     let cancelled = false;
@@ -92,6 +100,34 @@ export function CheckoutSuccess() {
         <div className="mt-10 flex flex-wrap justify-center gap-3">
           <Button asChild>
             <Link href="/account/orders">View orders</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (state === "unconfirmed") {
+    return (
+      <div className="container-lux flex min-h-[70vh] flex-col items-center justify-center py-20 text-center">
+        <AlertTriangle className="size-8 text-amber-600" />
+        <p className="eyebrow mt-8">Payment not confirmed</p>
+        <h1 className="editorial-title mt-3 text-ink">We couldn't confirm your payment</h1>
+        <p className="mt-5 max-w-md text-sm leading-relaxed text-muted">
+          {orderNumber ? (
+            <>
+              Your order <span className="text-ink">{orderNumber}</span> was not confirmed as paid. If you were taken to the
+              payment page but did not see a confirmation, your items are still in your bag.
+            </>
+          ) : (
+            "We couldn't confirm any recent payment. Your items are still in your bag."
+          )}
+        </p>
+        <div className="mt-10 flex flex-wrap justify-center gap-3">
+          <Button size="lg" asChild>
+            <Link href="/checkout">Try again</Link>
+          </Button>
+          <Button variant="outline" size="lg" asChild>
+            <Link href="/account/orders">Check orders</Link>
           </Button>
         </div>
       </div>
