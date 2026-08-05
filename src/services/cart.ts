@@ -15,12 +15,12 @@ export interface UpdateCartInput {
 export const cartService = {
   async get(country?: string): Promise<Cart> {
     const qs = country ? `?country=${encodeURIComponent(country)}` : "";
-    const res = await apiClient<ApiResponse<Cart>>(`/cart${qs}`, { cartToken: true });
+    const res = await apiClient<ApiResponse<Cart>>(`/cart${qs}`, { cartToken: true, auth: true });
     return unwrap(res);
   },
 
   async count(): Promise<{ count: number }> {
-    const res = await apiClient<ApiResponse<{ count: number }>>("/cart/count", { cartToken: true });
+    const res = await apiClient<ApiResponse<{ count: number }>>("/cart/count", { cartToken: true, auth: true });
     return unwrap(res);
   },
 
@@ -29,6 +29,7 @@ export const cartService = {
       method: "POST",
       body: { variantId: input.variantId, quantity: input.quantity },
       cartToken: true,
+      auth: true,
     });
     return unwrap(res);
   },
@@ -38,6 +39,7 @@ export const cartService = {
       method: "PATCH",
       body: input,
       cartToken: true,
+      auth: true,
     });
     return unwrap(res);
   },
@@ -46,6 +48,7 @@ export const cartService = {
     const res = await apiClient<ApiResponse<Cart>>(`/cart/items/${itemId}`, {
       method: "DELETE",
       cartToken: true,
+      auth: true,
     });
     return unwrap(res);
   },
@@ -54,6 +57,7 @@ export const cartService = {
     const res = await apiClient<ApiResponse<Cart>>("/cart", {
       method: "DELETE",
       cartToken: true,
+      auth: true,
     });
     return unwrap(res);
   },
@@ -63,6 +67,7 @@ export const cartService = {
       method: "POST",
       body: { code },
       cartToken: true,
+      auth: true,
     });
     return unwrap(res);
   },
@@ -71,6 +76,7 @@ export const cartService = {
     const res = await apiClient<ApiResponse<Cart>>("/cart/coupon", {
       method: "DELETE",
       cartToken: true,
+      auth: true,
     });
     return unwrap(res);
   },
@@ -80,6 +86,7 @@ export const cartService = {
       method: "POST",
       body: { methodId, country },
       cartToken: true,
+      auth: true,
     });
     return unwrap(res);
   },
