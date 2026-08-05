@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -35,6 +35,8 @@ type Values = z.infer<typeof schema>;
 
 export function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") ?? "/";
   const registerUser = useAuthStore((s) => s.register);
   const isLoading = useAuthStore((s) => s.isLoading);
 
@@ -53,7 +55,7 @@ export function RegisterForm() {
         password: values.password,
       });
       toast.success("Account created — welcome");
-      router.replace("/");
+      router.replace(redirect);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Could not create account";
       toast.error(msg);

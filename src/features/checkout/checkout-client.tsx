@@ -46,6 +46,8 @@ export function CheckoutClient() {
   const cart = useCartStore((s) => s.cart);
   const clearCart = useCartStore((s) => s.clear);
   const user = useAuthStore((s) => s.user);
+  const hydrated = useAuthStore((s) => s.hydrated);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[] | null>(null);
   const [loadingOptions, setLoadingOptions] = useState(false);
@@ -157,6 +159,27 @@ export function CheckoutClient() {
         <Button variant="outline" size="sm" asChild className="mt-2">
           <Link href="/shop">Continue shopping</Link>
         </Button>
+      </div>
+    );
+  }
+
+  if (hydrated && !isAuthenticated) {
+    return (
+      <div className="container-lux flex min-h-[50vh] flex-col items-center justify-center gap-5 py-20 text-center">
+        <p className="eyebrow">Sign in to continue</p>
+        <h1 className="editorial-title mt-2 max-w-md text-ink">Your bag is ready</h1>
+        <p className="max-w-md text-muted">
+          Create an account or sign in to place your order. Your bag is saved and will be right here
+          when you come back.
+        </p>
+        <div className="mt-2 flex flex-wrap justify-center gap-3">
+          <Button size="lg" asChild>
+            <Link href="/login?redirect=/checkout">Sign in</Link>
+          </Button>
+          <Button variant="outline" size="lg" asChild>
+            <Link href="/register?redirect=/checkout">Create an account</Link>
+          </Button>
+        </div>
       </div>
     );
   }

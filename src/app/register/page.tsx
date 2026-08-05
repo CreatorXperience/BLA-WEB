@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { AuthLayout } from "@/components/shared/auth-layout";
 import { RegisterForm } from "@/features/auth/register-form";
 
@@ -23,7 +24,9 @@ export default function RegisterPage() {
         </>
       }
     >
-      <RegisterForm />
+      <Suspense fallback={null}>
+        <RegisterForm />
+      </Suspense>
     </AuthLayout>
   );
 }
