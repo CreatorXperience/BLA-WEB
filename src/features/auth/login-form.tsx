@@ -36,7 +36,9 @@ export function LoginForm() {
     try {
       await login(values);
       toast.success("Welcome back");
-      router.replace(redirect);
+      const user = useAuthStore.getState().user;
+      const isAdmin = user ? ["ADMIN", "EDITOR", "MANAGER", "SUPER_ADMIN"].includes(user.role) : false;
+      router.replace(isAdmin && redirect === "/" ? "/admin" : redirect);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Could not sign in";
       toast.error(msg);

@@ -12,10 +12,19 @@ import { QuickView } from "@/components/product/quick-view";
 
 export function StoreShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const isAdmin = pathname.startsWith("/admin");
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [pathname]);
+
+  if (isAdmin) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <main className="flex-1">{children}</main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col">

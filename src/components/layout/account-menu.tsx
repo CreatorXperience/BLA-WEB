@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Package, ShoppingBag, User as UserIcon } from "lucide-react";
+import { LayoutDashboard, LogOut, Package, ShoppingBag, User as UserIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,7 @@ export function AccountMenu() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const clearWishlist = useWishlistStore((s) => s.clear);
+  const isAdmin = user ? ["ADMIN", "EDITOR", "MANAGER", "SUPER_ADMIN"].includes(user.role) : false;
 
   const handleLogout = async () => {
     await logout();
@@ -48,6 +49,11 @@ export function AccountMenu() {
         <DropdownMenuItem onSelect={() => router.push("/account/wishlist")}>
           <ShoppingBag className="size-4" /> Wishlist
         </DropdownMenuItem>
+        {isAdmin ? (
+          <DropdownMenuItem onSelect={() => router.push("/admin")}>
+            <LayoutDashboard className="size-4" /> Admin
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={handleLogout}>
           <LogOut className="size-4" /> Logout
