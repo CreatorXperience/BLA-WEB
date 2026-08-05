@@ -96,7 +96,7 @@ export function UsersManager() {
           </div>
         ) : isError ? (
           <p className="p-6 text-sm text-red-600">{error instanceof Error ? error.message : "Could not load users."}</p>
-        ) : !data || data.data.length === 0 ? (
+        ) : !data || data.items.length === 0 ? (
           <p className="p-10 text-center text-sm text-muted">No users found.</p>
         ) : (
           <table className="w-full text-left text-sm">
@@ -111,7 +111,7 @@ export function UsersManager() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {data.data.map((u) => (
+              {data.items.map((u) => (
                 <tr key={u.id} className="hover:bg-mist/40">
                   <td className="px-4 py-3">
                     <p className="font-medium text-ink">

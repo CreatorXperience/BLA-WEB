@@ -167,6 +167,7 @@ export interface AdminOrderListItem {
   status: OrderStatus;
   email?: string;
   customer?: string;
+  user?: { firstName?: string | null; lastName?: string | null; email?: string } | null;
   items?: Array<{ productName: string; quantity: number }>;
   itemCount?: number;
   grandTotal: string;
@@ -231,7 +232,15 @@ export interface AdminOrderDetail {
     country: string;
   } | null;
   shippingAddressSnapshot?: unknown;
-  timeline?: Array<{ id: string; status: string; note?: string | null; createdAt: string }>;
+  timeline?: Array<{
+    id: string;
+    eventType?: string;
+    fromStatus?: string | null;
+    toStatus?: string | null;
+    description?: string;
+    metadata?: Record<string, unknown> | null;
+    createdAt: string;
+  }>;
   payments?: Array<{
     id: string;
     reference: string;
@@ -255,7 +264,7 @@ export interface AdminOrderQuery {
 }
 
 export interface AdminOrderPaged {
-  data: AdminOrderListItem[];
+  items: AdminOrderListItem[];
   total: number;
   page: number;
   perPage: number;
@@ -278,7 +287,7 @@ export interface AdminUser {
 }
 
 export interface AdminUserPaged {
-  data: AdminUser[];
+  items: AdminUser[];
   total: number;
   page: number;
   perPage: number;
@@ -354,7 +363,7 @@ export interface CouponInput {
 }
 
 export interface CouponPaged {
-  data: Coupon[];
+  items: Coupon[];
   total: number;
   page: number;
   perPage: number;

@@ -2,6 +2,7 @@ import { apiClient, unwrap } from "./client";
 import type { ApiResponse } from "@/types/api";
 import type {
   AdminOrderDetail,
+  AdminOrderListItem,
   AdminOrderQuery,
   AdminOrderPaged,
   AdminProduct,
@@ -105,8 +106,20 @@ export const adminOrderService = {
     if (query.sort) qs.set("sort", query.sort);
     if (query.from) qs.set("from", query.from);
     if (query.to) qs.set("to", query.to);
-    const res = await apiClient<ApiResponse<AdminOrderPaged>>(`/orders/admin${qs.size ? `?${qs}` : ""}`, auth);
-    return unwrap(res);
+    const res = await apiClient<ApiResponse<AdminOrderListItem[]>>(`/orders/admin${qs.size ? `?${qs}` : ""}`, auth);
+    const items = unwrap(res).map((o) => ({
+      ...o,
+      customer:
+        o.customer ??
+        ((o.user ? `${o.user.firstName ?? ""} ${o.user.lastName ?? ""}`.trim() : "") || o.email || ""),
+      itemCount: o.itemCount ?? o.items?.length ?? 0,
+    }));
+    return {
+      items,
+      total: res.meta?.pagination?.total ?? 0,
+      page: res.meta?.pagination?.page ?? query.page ?? 1,
+      perPage: res.meta?.pagination?.perPage ?? query.perPage ?? 20,
+    };
   },
 
   async stats() {
@@ -143,8 +156,14 @@ export const adminUserService = {
     if (query.isActive) qs.set("isActive", query.isActive);
     if (query.sort) qs.set("sort", query.sort);
     if (query.order) qs.set("order", query.order);
-    const res = await apiClient<ApiResponse<AdminUserPaged>>(`/admin/users${qs.size ? `?${qs}` : ""}`, auth);
-    return unwrap(res);
+    const res = await apiClient<ApiResponse<AdminUser[]>>(`/admin/users${qs.size ? `?${qs}` : ""}`, auth);
+    const items = unwrap(res);
+    return {
+      items,
+      total: res.meta?.pagination?.total ?? 0,
+      page: res.meta?.pagination?.page ?? query.page ?? 1,
+      perPage: res.meta?.pagination?.perPage ?? query.perPage ?? 20,
+    };
   },
 
   async get(id: string): Promise<AdminUser> {
@@ -162,17 +181,20 @@ export const adminUserService = {
     return unwrap(res);
   },
 
-  async auditLogs(query: AuditLogQuery = {}): Promise<{ data: AuditLogEntry[]; total: number; page: number; perPage: number }> {
+  async auditLogs(query: AuditLogQuery = {}): Promise<{ items: AuditLogEntry[]; total: number; page: number; perPage: number }> {
     const qs = new URLSearchParams();
     if (query.page) qs.set("page", String(query.page));
     if (query.perPage) qs.set("perPage", String(query.perPage));
     if (query.entity) qs.set("entity", query.entity);
     if (query.action) qs.set("action", query.action);
-    const res = await apiClient<ApiResponse<{ data: AuditLogEntry[]; total: number; page: number; perPage: number }>>(
-      `/admin/audit-logs${qs.size ? `?${qs}` : ""}`,
-      auth,
-    );
-    return unwrap(res);
+    const res = await apiClient<ApiResponse<AuditLogEntry[]>>(`/admin/audit-logs${qs.size ? `?${qs}` : ""}`, auth);
+    const items = unwrap(res);
+    return {
+      items,
+      total: res.meta?.pagination?.total ?? 0,
+      page: res.meta?.pagination?.page ?? query.page ?? 1,
+      perPage: res.meta?.pagination?.perPage ?? query.perPage ?? 20,
+    };
   },
 };
 
@@ -184,8 +206,14 @@ export const adminCouponService = {
     if (query.q) qs.set("q", query.q);
     if (query.type) qs.set("type", query.type);
     if (query.isActive) qs.set("isActive", query.isActive);
-    const res = await apiClient<ApiResponse<CouponPaged>>(`/coupons${qs.size ? `?${qs}` : ""}`, auth);
-    return unwrap(res);
+    const res = await apiClient<ApiResponse<Coupon[]>>(`/coupons${qs.size ? `?${qs}` : ""}`, auth);
+    const items = unwrap(res);
+    return {
+      items,
+      total: res.meta?.pagination?.total ?? 0,
+      page: res.meta?.pagination?.page ?? query.page ?? 1,
+      perPage: res.meta?.pagination?.perPage ?? query.perPage ?? 20,
+    };
   },
 
   async create(input: CouponInput): Promise<Coupon> {
@@ -289,14 +317,25 @@ export const adminCmsService = {
 };
 
 export const adminInventoryService = {
-  async list(query: { page?: number; perPage?: number; status?: string; q?: string } = {}) {
+  async list(query: { page?: number; perPage?: number; status?: string; q?: string } = {}): Promise<{
+    items: unknown[];
+    total: number;
+    page: number;
+    perPage: number;
+  }> {
     const qs = new URLSearchParams();
     if (query.page) qs.set("page", String(query.page));
     if (query.perPage) qs.set("perPage", String(query.perPage));
     if (query.status) qs.set("status", query.status);
     if (query.q) qs.set("q", query.q);
-    const res = await apiClient<ApiResponse<unknown>>(`/inventory${qs.size ? `?${qs}` : ""}`, auth);
-    return unwrap(res);
+    const res = await apiClient<ApiResponse<unknown[]>>(`/inventory${qs.size ? `?${qs}` : ""}`, auth);
+    const items = unwrap(res);
+    return {
+      items,
+      total: res.meta?.pagination?.total ?? 0,
+      page: res.meta?.pagination?.page ?? query.page ?? 1,
+      perPage: res.meta?.pagination?.perPage ?? query.perPage ?? 20,
+    };
   },
 
   async stats() {

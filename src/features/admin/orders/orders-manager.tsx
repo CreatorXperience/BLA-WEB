@@ -77,7 +77,7 @@ export function OrdersManager() {
           </div>
         ) : isError ? (
           <p className="p-6 text-sm text-red-600">{error instanceof Error ? error.message : "Could not load orders."}</p>
-        ) : !data || data.data.length === 0 ? (
+        ) : !data || data.items.length === 0 ? (
           <p className="p-10 text-center text-sm text-muted">No orders found.</p>
         ) : (
           <table className="w-full text-left text-sm">
@@ -92,7 +92,7 @@ export function OrdersManager() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {data.data.map((o) => {
+              {data.items.map((o) => {
                 const itemCount = o.itemCount ?? o.items?.length ?? 0;
                 return (
                   <tr key={o.id} className="hover:bg-mist/40">

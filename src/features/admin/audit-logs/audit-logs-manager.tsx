@@ -21,7 +21,7 @@ export function AuditLogsManager() {
               <Skeleton key={i} className="h-12" />
             ))}
           </div>
-        ) : !data || data.data.length === 0 ? (
+        ) : !data || data.items.length === 0 ? (
           <p className="p-10 text-center text-sm text-muted">No audit logs yet.</p>
         ) : (
           <table className="w-full text-left text-sm">
@@ -35,7 +35,7 @@ export function AuditLogsManager() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {data.data.map((log: AuditLogEntry) => (
+              {data.items.map((log: AuditLogEntry) => (
                 <tr key={log.id} className="hover:bg-mist/40">
                   <td className="px-4 py-3 text-xs text-muted">{new Date(log.createdAt).toLocaleString()}</td>
                   <td className="px-4 py-3">{log.actor?.email ?? "system"}</td>

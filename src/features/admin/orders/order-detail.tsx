@@ -173,8 +173,10 @@ export function OrderDetail() {
                   <li key={entry.id} className="flex gap-3 text-sm">
                     <span className="mt-1 size-2 shrink-0 rounded-full bg-ink" />
                     <div>
-                      <p className="font-medium text-ink">{entry.status.replace("_", " ").toLowerCase()}</p>
-                      {entry.note ? <p className="text-muted">{entry.note}</p> : null}
+                      <p className="font-medium text-ink">
+                        {(entry.toStatus ?? entry.eventType ?? "").replace(/_/g, " ").toLowerCase()}
+                      </p>
+                      {entry.description ? <p className="text-muted">{entry.description}</p> : null}
                       <p className="text-xs text-economy">{new Date(entry.createdAt).toLocaleString()}</p>
                     </div>
                   </li>

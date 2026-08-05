@@ -144,7 +144,7 @@ export function CouponsManager() {
           </div>
         ) : isError ? (
           <p className="p-6 text-sm text-red-600">{error instanceof Error ? error.message : "Could not load coupons."}</p>
-        ) : !data || data.data.length === 0 ? (
+        ) : !data || data.items.length === 0 ? (
           <p className="p-10 text-center text-sm text-muted">No coupons found.</p>
         ) : (
           <table className="w-full text-left text-sm">
@@ -160,7 +160,7 @@ export function CouponsManager() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {data.data.map((c) => (
+              {data.items.map((c) => (
                 <tr key={c.id} className="hover:bg-mist/40">
                   <td className="px-4 py-3 font-mono font-medium text-ink">{c.code}</td>
                   <td className="px-4 py-3 text-muted">{c.type.toLowerCase()}</td>

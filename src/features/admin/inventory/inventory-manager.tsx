@@ -42,6 +42,7 @@ export function InventoryManager() {
     queryFn: () => adminInventoryService.list({ page, perPage: 20, status: status || undefined, q: debouncedQ || undefined }),
     retry: 1,
   });
+  const result = data as unknown as { items?: InventoryItem[]; total?: number; page?: number; perPage?: number } | undefined;
   const mutations = useInventoryMutations();
   const [adjusting, setAdjusting] = useState<Record<string, string>>({});
 
@@ -58,14 +59,13 @@ export function InventoryManager() {
     const change = value ? Number(value) : delta;
     if (!change) return;
     try {
-      await mutations.adjust.mutateAsync({ variantId: item.variant.id, change, reason: "Manual adjustment" });      setAdjusting((prev) => ({ ...prev, [item.id]: "" }));
+      await mutations.adjust.mutateAsync({ variantId: item.variant.id, change, reason: "Manual adjustment" });
+      setAdjusting((prev) => ({ ...prev, [item.id]: "" }));
       toast.success(`Stock adjusted by ${change}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Adjust failed");
     }
   };
-
-  const result = data as unknown as { data?: InventoryItem[]; total?: number; page?: number; perPage?: number } | undefined;
 
   return (
     <div>
@@ -105,7 +105,7 @@ export function InventoryManager() {
           </div>
         ) : isError ? (
           <p className="p-6 text-sm text-red-600">Could not load inventory.</p>
-        ) : !result || !result.data || result.data.length === 0 ? (
+        ) : !result || !result.items || result.items.length === 0 ? (
           <p className="p-10 text-center text-sm text-muted">No inventory records found.</p>
         ) : (
           <table className="w-full text-left text-sm">
@@ -121,7 +121,7 @@ export function InventoryManager() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {result.data.map((item) => (
+              {result.items.map((item) => (
                 <tr key={item.id} className="hover:bg-mist/40">
                   <td className="px-4 py-3 font-medium text-ink">{item.variant.product.name}</td>
                   <td className="px-4 py-3 text-muted">
