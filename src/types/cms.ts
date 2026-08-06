@@ -5,12 +5,14 @@ export type HomepageSectionType =
   | "ANNOUNCEMENT_BAR"
   | "FEATURED_COLLECTIONS"
   | "FEATURED_PRODUCTS"
-  | "EDITORIAL_BANNER"
-  | "BEST_SELLERS"
   | "NEW_ARRIVALS"
-  | "BRAND_STORY"
-  | "INSTAGRAM"
-  | "NEWSLETTER";
+  | "EDITORIAL"
+  | "INSTAGRAM_GALLERY"
+  | "TESTIMONIALS"
+  | "NEWSLETTER"
+  | "PROMOTIONAL_BANNER"
+  | "FOOTER_LINK"
+  | "NAVIGATION";
 
 export interface HomepageSection {
   id: string;
@@ -59,4 +61,54 @@ export interface CmsPage {
   metaTitle?: string | null;
   metaDescription?: string | null;
   publishedAt?: string | null;
+}
+
+export interface Look {
+  season: string;
+  title: string;
+  image: string;
+  caption?: string;
+}
+
+export interface LookbookContent {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  looks: Look[];
+}
+
+export interface JournalArticle {
+  slug: string;
+  category: string;
+  title: string;
+  excerpt: string;
+  image: string;
+  date: string;
+  minutes: number;
+  body?: string[];
+}
+
+export interface JournalContent {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  articles: JournalArticle[];
+}
+
+export interface AboutValue {
+  title: string;
+  text: string;
+}
+
+export interface AboutContent {
+  heroImage: string;
+  heroEyebrow: string;
+  heroTitle: string;
+  manifestoEyebrow: string;
+  manifesto: string;
+  values: AboutValue[];
+  bandEyebrow: string;
+  bandImage: string;
+  bandTitle: string;
+  bandText: string;
 }

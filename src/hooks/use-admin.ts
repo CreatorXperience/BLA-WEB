@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   adminCmsService,
+  adminCollectionService,
   adminCouponService,
   adminDashboardService,
   adminInventoryService,
@@ -34,6 +35,7 @@ export const qk = {
   cmsAnnouncements: ["admin", "cms", "announcements"] as const,
   cmsNav: ["admin", "cms", "nav"] as const,
   cmsPages: ["admin", "cms", "pages"] as const,
+  collections: ["admin", "collections"] as const,
   inventoryAlerts: ["admin", "inventory", "alerts"] as const,
 };
 
@@ -158,6 +160,28 @@ export function useAdminCouponMutations() {
       onSuccess: invalidate,
     }),
     remove: useMutation({ mutationFn: (id: string) => adminCouponService.remove(id), onSuccess: invalidate }),
+  };
+}
+
+// ---- Collections ----
+
+export function useAdminCollections() {
+  return useQuery({ queryKey: qk.collections, queryFn: adminCollectionService.list, retry: 1 });
+}
+
+export function useAdminCollectionMutations() {
+  const qc = useQueryClient();
+  const invalidate = () => {
+    void qc.invalidateQueries({ queryKey: ["admin", "collections"] });
+    void qc.invalidateQueries({ queryKey: ["collections"] });
+  };
+  return {
+    create: useMutation({ mutationFn: (input: Record<string, unknown>) => adminCollectionService.create(input), onSuccess: invalidate }),
+    update: useMutation({
+      mutationFn: ({ id, input }: { id: string; input: Record<string, unknown> }) => adminCollectionService.update(id, input),
+      onSuccess: invalidate,
+    }),
+    remove: useMutation({ mutationFn: (id: string) => adminCollectionService.remove(id), onSuccess: invalidate }),
   };
 }
 

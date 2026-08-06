@@ -1,5 +1,6 @@
 import { apiClient, unwrap } from "./client";
 import type { ApiResponse } from "@/types/api";
+import type { Collection } from "@/types/catalog";
 import type {
   AdminOrderDetail,
   AdminOrderListItem,
@@ -419,5 +420,32 @@ export const adminAnalyticsService = {
     if (params.to) qs.set("to", params.to);
     const res = await apiClient<ApiResponse<unknown>>(`/analytics/admin/conversion${qs.size ? `?${qs}` : ""}`, auth);
     return unwrap(res);
+  },
+};
+
+export const adminCollectionService = {
+  async list(): Promise<Collection[]> {
+    const res = await apiClient<ApiResponse<Collection[] | { data: Collection[] }>>("/collections?limit=100");
+    const body = unwrap(res) as Collection[] | { data: Collection[] };
+    return Array.isArray(body) ? body : body.data;
+  },
+
+  async byId(id: string): Promise<Collection> {
+    const res = await apiClient<ApiResponse<Collection>>(`/collections/${id}`, auth);
+    return unwrap(res);
+  },
+
+  async create(input: Record<string, unknown>): Promise<Collection> {
+    const res = await apiClient<ApiResponse<Collection>>("/collections/admin", { ...auth, method: "POST", body: input });
+    return unwrap(res);
+  },
+
+  async update(id: string, input: Record<string, unknown>): Promise<Collection> {
+    const res = await apiClient<ApiResponse<Collection>>(`/collections/admin/${id}`, { ...auth, method: "PATCH", body: input });
+    return unwrap(res);
+  },
+
+  async remove(id: string): Promise<void> {
+    await apiClient(`/collections/admin/${id}`, { ...auth, method: "DELETE" });
   },
 };

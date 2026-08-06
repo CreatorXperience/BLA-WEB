@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { ArrowLeft, Plus, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Save, Trash2, Upload } from "lucide-react";
 import { useAdminProduct, useAdminProductMutations } from "@/hooks/use-admin";
+import { mediaService } from "@/services/media";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -399,41 +400,14 @@ export function ProductEditor() {
               <div className="space-y-3">
                 {images.length === 0 ? <p className="text-sm text-muted">No images yet.</p> : null}
                 {images.map((img, i) => (
-                  <div key={i} className="flex flex-col gap-2 border border-line p-3 sm:flex-row sm:items-center">
-                    {img.url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={img.url} alt="" className="size-12 shrink-0 border border-line bg-mist object-cover" />
-                    ) : null}
-                    <Input
-                      placeholder="Image URL"
-                      value={img.url}
-                      onChange={(e) => setImages((prev) => prev.map((x, idx) => (idx === i ? { ...x, url: e.target.value } : x)))}
-                    />
-                    <Input
-                      placeholder="Alt text"
-                      value={img.altText}
-                      onChange={(e) => setImages((prev) => prev.map((x, idx) => (idx === i ? { ...x, altText: e.target.value } : x)))}
-                    />
-                    <label className="flex shrink-0 items-center gap-1 text-xs text-muted">
-                      <input
-                        type="radio"
-                        name="img-thumb"
-                        checked={img.isThumbnail}
-                        onChange={() => setImages((prev) => prev.map((x, idx) => ({ ...x, isThumbnail: idx === i })))}
-                        className="accent-ink"
-                      />
-                      Thumb
-                    </label>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="iconSm"
-                      className="text-red-600"
-                      onClick={() => setImages((prev) => prev.filter((_, idx) => idx !== i))}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
+                  <ImageRow
+                    key={i}
+                    img={img}
+                    onUrl={(url) => setImages((prev) => prev.map((x, idx) => (idx === i ? { ...x, url } : x)))}
+                    onAltText={(altText) => setImages((prev) => prev.map((x, idx) => (idx === i ? { ...x, altText } : x)))}
+                    onThumb={() => setImages((prev) => prev.map((x, idx) => ({ ...x, isThumbnail: idx === i })))}
+                    onRemove={() => setImages((prev) => prev.filter((_, idx) => idx !== i))}
+                  />
                 ))}
               </div>
             </section>
@@ -488,6 +462,86 @@ export function ProductEditor() {
           </aside>
         </div>
       </form>
+    </div>
+  );
+}
+
+function ImageRow({
+  img,
+  onUrl,
+  onAltText,
+  onThumb,
+  onRemove,
+}: {
+  img: ImageRow;
+  onUrl: (url: string) => void;
+  onAltText: (altText: string) => void;
+  onThumb: () => void;
+  onRemove: () => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+
+  const handleFile = async (file: File | undefined) => {
+    if (!file) return;
+    setBusy(true);
+    try {
+      const asset = await mediaService.upload(file, file.name, "products");
+      onUrl(asset.url);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setBusy(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-2 border border-line p-3 sm:flex-row sm:items-center">
+      {img.url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={img.url} alt="" className="size-12 shrink-0 border border-line bg-mist object-cover" />
+      ) : null}
+      <Input
+        placeholder="Image URL"
+        value={img.url}
+        onChange={(e) => onUrl(e.target.value)}
+      />
+      <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => fileRef.current?.click()}>
+        {busy ? "Uploading…" : <Upload className="mr-1 size-3.5" />}
+        {busy ? "" : "Upload"}
+      </Button>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => void handleFile(e.target.files?.[0])}
+      />
+      <Input
+        placeholder="Alt text"
+        value={img.altText}
+        onChange={(e) => onAltText(e.target.value)}
+      />
+      <label className="flex shrink-0 items-center gap-1 text-xs text-muted">
+        <input
+          type="radio"
+          name="img-thumb"
+          checked={img.isThumbnail}
+          onChange={onThumb}
+          className="accent-ink"
+        />
+        Thumb
+      </label>
+      <Button
+        type="button"
+        variant="ghost"
+        size="iconSm"
+        className="text-red-600"
+        onClick={onRemove}
+      >
+        <Trash2 className="size-4" />
+      </Button>
     </div>
   );
 }

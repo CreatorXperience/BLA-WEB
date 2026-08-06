@@ -23,6 +23,9 @@ export interface Collection {
   isActive?: boolean;
   isFeatured?: boolean;
   sortOrder?: number;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  badge?: string | null;
   productCount?: number;
   products?: { id: string; name: string; slug: string; basePrice: number; compareAtPrice?: number | null; images: { url: string; altText?: string | null; isThumbnail: boolean }[] }[];
 }

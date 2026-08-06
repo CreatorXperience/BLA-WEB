@@ -18,9 +18,20 @@ export const cmsService = {
     return unwrap(res);
   },
 
-  async publicSettings(): Promise<Record<string, string>> {
-    const res = await apiClient<ApiResponse<Record<string, string>>>("/cms/settings/public");
+  async publicSettings(): Promise<Record<string, unknown>> {
+    const res = await apiClient<ApiResponse<Record<string, unknown>>>("/cms/settings/public");
     return unwrap(res);
+  },
+
+  async contentPage<T>(key: string, fallback: T): Promise<T> {
+    try {
+      const all = await this.publicSettings();
+      const raw = all[`content.${key}`];
+      if (raw && typeof raw === "object") return raw as T;
+    } catch {
+      /* ignore, fall back */
+    }
+    return fallback;
   },
 
   async page(slug: string): Promise<CmsPage> {

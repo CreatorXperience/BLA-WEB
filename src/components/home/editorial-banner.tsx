@@ -8,7 +8,7 @@ import { useHomepage } from "@/hooks/use-catalog";
 
 export function EditorialBanner() {
   const { data } = useHomepage();
-  const editorial = (data?.sections ?? []).find((s) => s.sectionType === "EDITORIAL_BANNER");
+  const editorial = (data?.sections ?? []).find((s) => s.sectionType === "EDITORIAL");
 
   const image = (editorial?.content?.mediaUrl as string) ?? IMAGERY.editorial[0];
   const title = editorial?.title ?? "Considered by design.";

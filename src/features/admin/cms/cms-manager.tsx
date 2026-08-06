@@ -14,6 +14,8 @@ import { ErrorText } from "@/components/shared/form-utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AdminPageHeader, StatusBadge } from "@/features/admin/shared";
+import { ImageInput } from "@/features/admin/shared/media-input";
+import { ContentPagesTab } from "@/features/admin/cms/content-pages";
 
 export function CmsManager() {
   return (
@@ -22,6 +24,7 @@ export function CmsManager() {
       <Tabs defaultValue="sections">
         <TabsList>
           <TabsTrigger value="sections">Homepage</TabsTrigger>
+          <TabsTrigger value="content">Content pages</TabsTrigger>
           <TabsTrigger value="announcements">Announcements</TabsTrigger>
           <TabsTrigger value="navigation">Navigation</TabsTrigger>
           <TabsTrigger value="pages">Pages</TabsTrigger>
@@ -29,6 +32,9 @@ export function CmsManager() {
         </TabsList>
         <TabsContent value="sections">
           <HomepageSectionsTab />
+        </TabsContent>
+        <TabsContent value="content">
+          <ContentPagesTab />
         </TabsContent>
         <TabsContent value="announcements">
           <AnnouncementsTab />
@@ -71,26 +77,45 @@ const sectionSchema = z.object({
   subtitle: z.string().optional(),
   status: z.enum(["ACTIVE", "INACTIVE", "DRAFT"]),
   sortOrder: z.coerce.number().int().min(0),
-  content: z.string().optional(),
+  mediaUrl: z.string().optional(),
+  ctaText: z.string().optional(),
+  ctaUrl: z.string().optional(),
+  extraJson: z.string().optional(),
 });
 
 type SectionValues = z.infer<typeof sectionSchema>;
+
+const IMAGE_SECTION_TYPES = new Set(["HERO_BANNER", "EDITORIAL", "PROMOTIONAL_BANNER"]);
 
 function HomepageSectionsTab() {
   const { data: sections, isLoading } = useCmsSections();
   const mutations = useCmsMutations();
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const form = useForm<z.input<typeof sectionSchema>, unknown, SectionValues>({
     resolver: zodResolver(sectionSchema),
-    defaultValues: { sectionKey: "", sectionType: "HERO_BANNER", title: "", subtitle: "", status: "ACTIVE", sortOrder: 0, content: "{}" },
+    defaultValues: {
+      sectionKey: "",
+      sectionType: "HERO_BANNER",
+      title: "",
+      subtitle: "",
+      status: "ACTIVE",
+      sortOrder: 0,
+      mediaUrl: "",
+      ctaText: "",
+      ctaUrl: "",
+      extraJson: "{}",
+    },
   });
+  const watchedType = form.watch("sectionType");
 
   const openEdit = (key: string) => {
     const s = sections?.find((x) => x.sectionKey === key);
     if (!s) return;
     setEditingKey(key);
     setCreating(false);
+    const { mediaUrl, ctaText, ctaUrl, ...rest } = (s.content ?? {}) as Record<string, unknown>;
     form.reset({
       sectionKey: s.sectionKey,
       sectionType: s.sectionType,
@@ -98,23 +123,37 @@ function HomepageSectionsTab() {
       subtitle: s.subtitle ?? "",
       status: s.status,
       sortOrder: s.sortOrder,
-      content: JSON.stringify(s.content ?? {}, null, 2),
+      mediaUrl: typeof mediaUrl === "string" ? mediaUrl : "",
+      ctaText: typeof ctaText === "string" ? ctaText : "",
+      ctaUrl: typeof ctaUrl === "string" ? ctaUrl : "",
+      extraJson: JSON.stringify(rest, null, 2),
     });
+    setShowAdvanced(false);
   };
 
   const openCreate = () => {
     setCreating(true);
     setEditingKey(null);
-    form.reset({ sectionKey: "", sectionType: "HERO_BANNER", title: "", subtitle: "", status: "DRAFT", sortOrder: 0, content: "{}" });
+    form.reset({ sectionKey: "", sectionType: "HERO_BANNER", title: "", subtitle: "", status: "DRAFT", sortOrder: 0, mediaUrl: "", ctaText: "", ctaUrl: "", extraJson: "{}" });
+    setShowAdvanced(false);
   };
 
   const onSubmit = async (values: SectionValues) => {
-    let content: Record<string, unknown> = {};
-    if (values.content && values.content.trim()) {
+    const content: Record<string, unknown> = {};
+    if (values.mediaUrl) content.mediaUrl = values.mediaUrl;
+    if (values.ctaText) content.ctaText = values.ctaText;
+    if (values.ctaUrl) content.ctaUrl = values.ctaUrl;
+    if (values.extraJson && values.extraJson.trim()) {
       try {
-        content = JSON.parse(values.content);
+        const parsed = JSON.parse(values.extraJson) as Record<string, unknown>;
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          Object.assign(content, parsed);
+        } else {
+          toast.error("Advanced content must be a JSON object");
+          return;
+        }
       } catch {
-        toast.error("Content must be valid JSON");
+        toast.error("Advanced content must be valid JSON");
         return;
       }
     }
@@ -193,7 +232,7 @@ function HomepageSectionsTab() {
       {editingKey || creating ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4" onClick={() => (setEditingKey(null), setCreating(false))}>
           <form
-            className="max-h-[90vh] w-full max-w-lg overflow-y-auto border border-line bg-paper p-6"
+            className="max-h-[90vh] w-full max-w-xl overflow-y-auto border border-line bg-paper p-6"
             onClick={(e) => e.stopPropagation()}
             onSubmit={form.handleSubmit(onSubmit)}
             noValidate
@@ -227,8 +266,8 @@ function HomepageSectionsTab() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="hs-title">Title</Label>
-                  <Input id="hs-title" {...form.register("title")} />
+                  <Label htmlFor="hs-title">Title / Headline</Label>
+                  <Input id="hs-title" placeholder={watchedType === "HERO_BANNER" ? "Slide headline" : "Title"} {...form.register("title")} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="hs-order">Sort order</Label>
@@ -239,10 +278,36 @@ function HomepageSectionsTab() {
                 <Label htmlFor="hs-subtitle">Subtitle</Label>
                 <Input id="hs-subtitle" {...form.register("subtitle")} />
               </div>
+
+              {IMAGE_SECTION_TYPES.has(watchedType) ? (
+                <>
+                  <ImageInput label="Image" value={form.watch("mediaUrl")} onChange={(url) => form.setValue("mediaUrl", url)} />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="hs-cta">Button text</Label>
+                      <Input id="hs-cta" placeholder="Shop the drop" {...form.register("ctaText")} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="hs-ctaurl">Button link</Label>
+                      <Input id="hs-ctaurl" placeholder="/shop" {...form.register("ctaUrl")} />
+                    </div>
+                  </div>
+                </>
+              ) : null}
+
               <div className="space-y-2">
-                <Label htmlFor="hs-content">Content (JSON)</Label>
-                <Textarea id="hs-content" rows={8} className="font-mono text-xs" {...form.register("content")} />
+                <button
+                  type="button"
+                  className="text-xs font-medium uppercase tracking-wider text-muted underline-offset-2 hover:underline"
+                  onClick={() => setShowAdvanced((v) => !v)}
+                >
+                  {showAdvanced ? "Hide" : "Show"} advanced content (JSON)
+                </button>
+                {showAdvanced ? (
+                  <Textarea id="hs-content" rows={6} className="font-mono text-xs" {...form.register("extraJson")} />
+                ) : null}
               </div>
+
               <div className="flex gap-2 pt-2">
                 <Button type="submit" className="flex-1">
                   Save section

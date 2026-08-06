@@ -42,6 +42,14 @@ export function useCmsPage(slug: string) {
   return useQuery({ queryKey: qk.cmsPage(slug), queryFn: () => cmsService.page(slug) });
 }
 
+export function useContentPage<T>(key: string, fallback: T) {
+  return useQuery<T>({
+    queryKey: ["cms", "content", key] as const,
+    queryFn: () => cmsService.contentPage<T>(key, fallback),
+    staleTime: 60_000,
+  });
+}
+
 export function useProducts(query: ProductQuery) {
   return useQuery({ queryKey: qk.products(query), queryFn: () => productService.list(query), placeholderData: (prev) => prev });
 }

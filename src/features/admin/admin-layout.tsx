@@ -6,6 +6,7 @@ import {
   BarChart3,
   Boxes,
   LayoutDashboard,
+  Layers,
   Package,
   ScrollText,
   Settings,
@@ -21,6 +22,7 @@ import { Button } from "@/components/ui/button";
 const NAV = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/products", label: "Products", icon: Package },
+  { href: "/admin/collections", label: "Collections", icon: Layers },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/coupons", label: "Coupons", icon: Tag },
