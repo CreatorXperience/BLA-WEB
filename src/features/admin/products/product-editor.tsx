@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { ArrowLeft, Plus, Save, Trash2, Upload } from "lucide-react";
-import { useAdminProduct, useAdminProductMutations } from "@/hooks/use-admin";
+import { useAdminCollections, useAdminProduct, useAdminProductMutations } from "@/hooks/use-admin";
 import { mediaService } from "@/services/media";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
@@ -118,8 +118,10 @@ export function ProductEditor() {
   const router = useRouter();
   const { data: product, isLoading } = useAdminProduct(id ?? "");
   const mutations = useAdminProductMutations();
+  const { data: collections = [] } = useAdminCollections();
   const [variants, setVariants] = useState<VariantRow[]>([emptyVariant]);
   const [images, setImages] = useState<ImageRow[]>([]);
+  const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
   const form = useForm<z.input<typeof schema>, unknown, Values>({ resolver: zodResolver(schema), defaultValues });
@@ -152,6 +154,7 @@ export function ProductEditor() {
         isLimitedEdition: product.isLimitedEdition,
       });
       setVariants((product.variants ?? []).map(toVariantRow));
+      setCollectionIds((product.collections ?? []).map((c) => c.id));
       setImages(
         (product.images ?? []).map((img) => ({
           id: img.id,
@@ -200,6 +203,7 @@ export function ProductEditor() {
         isTrending: values.isTrending,
         isNewArrival: values.isNewArrival,
         isLimitedEdition: values.isLimitedEdition,
+        collectionIds: collectionIds.map((collectionId, idx) => ({ collectionId, sortOrder: idx })),
         images: images.filter((i) => i.url.trim()).map((i, idx) => ({
           id: i.id,
           url: i.url.trim(),
@@ -410,6 +414,37 @@ export function ProductEditor() {
                   />
                 ))}
               </div>
+            </section>
+
+            {/* Collections */}
+            <section className="border border-line bg-paper p-6">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-ink">Collections</h2>
+                <span className="text-xs text-muted">{collectionIds.length} selected</span>
+              </div>
+              {collections.length === 0 ? (
+                <p className="text-sm text-muted">No collections yet. Create one from the Collections page first.</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {collections.map((c) => {
+                    const checked = collectionIds.includes(c.id);
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() =>
+                          setCollectionIds((prev) => (checked ? prev.filter((id) => id !== c.id) : [...prev, c.id]))
+                        }
+                        className={`border px-4 py-2 text-xs uppercase tracking-[0.14em] transition-colors ${
+                          checked ? "border-ink bg-ink text-background" : "border-ink/20 text-ink hover:border-ink"
+                        }`}
+                      >
+                        {c.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </section>
 
             {/* SEO */}
