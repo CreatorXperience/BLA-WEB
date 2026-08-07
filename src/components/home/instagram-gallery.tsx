@@ -4,8 +4,20 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { IMAGERY } from "@/constants/imagery";
 import { SITE } from "@/constants/site";
+import { useHomepage } from "@/hooks/use-catalog";
 
 export function InstagramGallery() {
+  const { data } = useHomepage();
+  const section = (data?.sections ?? []).find((s) => s.sectionType === "INSTAGRAM_GALLERY");
+
+  const images =
+    Array.isArray(section?.content?.images) && (section?.content?.images as string[]).filter(Boolean).length > 0
+      ? (section?.content?.images as string[]).filter((u): u is string => typeof u === "string" && u.trim().length > 0)
+      : section?.content?.mediaUrl
+        ? [section.content.mediaUrl as string, ...IMAGERY.instagram.slice(0, 5)]
+        : IMAGERY.instagram;
+  const handle = typeof section?.content?.handle === "string" && section.content.handle ? (section.content.handle as string) : SITE.name.toLowerCase();
+
   return (
     <section className="border-t border-line py-24 md:py-32">
       <div className="container-lux">
@@ -13,7 +25,7 @@ export function InstagramGallery() {
           <div>
             <p className="eyebrow">Follow Along</p>
             <h2 className="editorial-title mt-4 text-ink">
-              <span className="editorial-serif">@</span>{SITE.name.toLowerCase()}
+              <span className="editorial-serif">@</span>{handle}
             </h2>
           </div>
           <a
@@ -27,7 +39,7 @@ export function InstagramGallery() {
         </div>
       </div>
       <div className="mt-12 grid grid-cols-3 gap-1 md:grid-cols-6">
-        {IMAGERY.instagram.map((src, i) => (
+        {images.slice(0, 6).map((src, i) => (
           <motion.a
             key={i}
             href={SITE.instagram}

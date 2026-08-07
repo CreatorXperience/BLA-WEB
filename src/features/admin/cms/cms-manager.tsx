@@ -93,7 +93,7 @@ function HomepageSectionsTab() {
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [heroImages, setHeroImages] = useState<string[]>([]);
+  const [sectionImages, setSectionImages] = useState<string[]>([]);
   const form = useForm<z.input<typeof sectionSchema>, unknown, SectionValues>({
     resolver: zodResolver(sectionSchema),
     defaultValues: {
@@ -129,7 +129,7 @@ function HomepageSectionsTab() {
       ctaUrl: typeof ctaUrl === "string" ? ctaUrl : "",
       extraJson: JSON.stringify(rest, null, 2),
     });
-    setHeroImages(Array.isArray(images) ? images.filter((u): u is string => typeof u === "string") : []);
+    setSectionImages(Array.isArray(images) ? images.filter((u): u is string => typeof u === "string") : []);
     setShowAdvanced(false);
   };
 
@@ -137,15 +137,15 @@ function HomepageSectionsTab() {
     setCreating(true);
     setEditingKey(null);
     form.reset({ sectionKey: "", sectionType: "HERO_BANNER", title: "", subtitle: "", status: "DRAFT", sortOrder: 0, mediaUrl: "", ctaText: "", ctaUrl: "", extraJson: "{}" });
-    setHeroImages([]);
+    setSectionImages([]);
     setShowAdvanced(false);
   };
 
   const onSubmit = async (values: SectionValues) => {
     const content: Record<string, unknown> = {};
     if (values.mediaUrl) content.mediaUrl = values.mediaUrl;
-    if (watchedType === "HERO_BANNER" && heroImages.length > 0) {
-      content.images = heroImages.filter((u) => u.trim());
+    if ((watchedType === "HERO_BANNER" || watchedType === "INSTAGRAM_GALLERY") && sectionImages.length > 0) {
+      content.images = sectionImages.filter((u) => u.trim());
     }
     if (values.ctaText) content.ctaText = values.ctaText;
     if (values.ctaUrl) content.ctaUrl = values.ctaUrl;
@@ -292,38 +292,46 @@ function HomepageSectionsTab() {
                       <Label htmlFor="hs-mediaurl">{watchedType === "HERO_BANNER" ? "Slide image" : "Image"}</Label>
                       {watchedType === "HERO_BANNER" ? (
                         <span className="text-[11px] text-muted">Add extra images below to make this a multi-slide hero</span>
+                      ) : watchedType === "INSTAGRAM_GALLERY" ? (
+                        <span className="text-[11px] text-muted">Add images below for the gallery tiles</span>
                       ) : null}
                     </div>
                     <ImageInput label={watchedType === "HERO_BANNER" ? "Primary image" : "Image"} value={form.watch("mediaUrl")} onChange={(url) => form.setValue("mediaUrl", url)} />
                   </div>
 
-                  {watchedType === "HERO_BANNER" ? (
+                  {watchedType === "HERO_BANNER" || watchedType === "INSTAGRAM_GALLERY" ? (
                     <div className="space-y-2 rounded border border-dashed border-line p-3">
                       <div className="flex items-center justify-between">
-                        <p className="text-xs font-medium uppercase tracking-wider text-muted">Additional slides ({heroImages.length})</p>
+                        <p className="text-xs font-medium uppercase tracking-wider text-muted">
+                          {watchedType === "INSTAGRAM_GALLERY" ? `Gallery tiles (${sectionImages.length})` : `Additional slides (${sectionImages.length})`}
+                        </p>
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => setHeroImages((prev) => [...prev, ""])}
+                          onClick={() => setSectionImages((prev) => [...prev, ""])}
                         >
                           <Plus className="mr-1 size-3.5" /> Add image
                         </Button>
                       </div>
-                      {heroImages.length === 0 ? (
-                        <p className="text-xs text-muted">No additional slides. Use the primary image for a single-slide hero, or add more below.</p>
+                      {sectionImages.length === 0 ? (
+                        <p className="text-xs text-muted">
+                          {watchedType === "INSTAGRAM_GALLERY"
+                            ? "No gallery images yet. Add images below to show them on the homepage."
+                            : "No additional slides. Use the primary image for a single-slide hero, or add more below."}
+                        </p>
                       ) : (
                         <div className="space-y-2">
-                          {heroImages.map((url, i) => (
+                          {sectionImages.map((url, i) => (
                             <div key={i} className="flex items-center gap-2">
-                              <ImageInput label={`Slide ${i + 2}`} value={url} onChange={(next) => setHeroImages((prev) => prev.map((u, idx) => (idx === i ? next : u)))} />
+                              <ImageInput label={watchedType === "INSTAGRAM_GALLERY" ? `Image ${i + 1}` : `Slide ${i + 2}`} value={url} onChange={(next) => setSectionImages((prev) => prev.map((u, idx) => (idx === i ? next : u)))} />
                               <div className="flex shrink-0 flex-col gap-1">
                                 <Button
                                   type="button"
                                   variant="outline"
                                   size="iconSm"
                                   disabled={i === 0}
-                                  onClick={() => setHeroImages((prev) => { const copy = [...prev]; [copy[i - 1], copy[i]] = [copy[i], copy[i - 1]]; return copy; })}
+                                  onClick={() => setSectionImages((prev) => { const copy = [...prev]; [copy[i - 1], copy[i]] = [copy[i], copy[i - 1]]; return copy; })}
                                 >
                                   <ChevronUp className="size-3.5" />
                                 </Button>
@@ -331,12 +339,12 @@ function HomepageSectionsTab() {
                                   type="button"
                                   variant="outline"
                                   size="iconSm"
-                                  disabled={i === heroImages.length - 1}
-                                  onClick={() => setHeroImages((prev) => { const copy = [...prev]; [copy[i + 1], copy[i]] = [copy[i], copy[i + 1]]; return copy; })}
+                                  disabled={i === sectionImages.length - 1}
+                                  onClick={() => setSectionImages((prev) => { const copy = [...prev]; [copy[i + 1], copy[i]] = [copy[i], copy[i + 1]]; return copy; })}
                                 >
                                   <ChevronDown className="size-3.5" />
                                 </Button>
-                                <Button type="button" variant="ghost" size="iconSm" className="text-red-600" onClick={() => setHeroImages((prev) => prev.filter((_, idx) => idx !== i))}>
+                                <Button type="button" variant="ghost" size="iconSm" className="text-red-600" onClick={() => setSectionImages((prev) => prev.filter((_, idx) => idx !== i))}>
                                   <Trash2 className="size-3.5" />
                                 </Button>
                               </div>
