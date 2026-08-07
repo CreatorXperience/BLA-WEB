@@ -15,10 +15,27 @@ import type { AboutContent, JournalArticle, JournalContent, LookbookContent } fr
 const CONTENT_KEYS = ["lookbook", "journal", "about"] as const;
 type ContentKey = (typeof CONTENT_KEYS)[number];
 
+const DEFAULTS: Record<ContentKey, Record<string, unknown>> = {
+  lookbook: { eyebrow: "Lookbook", title: "Seasonal editorial", intro: "", looks: [] },
+  journal: { eyebrow: "Journal", title: "The house journal", intro: "", articles: [] },
+  about: {
+    heroImage: "",
+    heroEyebrow: "Our story",
+    heroTitle: "Made with intent.",
+    manifestoEyebrow: "The house",
+    manifesto: "",
+    values: [],
+    bandEyebrow: "Atelier, in practice",
+    bandImage: "",
+    bandTitle: "Small runs. No repeats.",
+    bandText: "",
+  },
+};
+
 function useStoredContent(key: ContentKey) {
   const { data, isLoading } = useCmsSettings("content");
   const setting = data?.find((s) => s.key === key);
-  const raw = setting && setting.value && typeof setting.value === "object" ? (setting.value as Record<string, unknown>) : null;
+  const raw = setting && setting.value && typeof setting.value === "object" ? (setting.value as Record<string, unknown>) : DEFAULTS[key];
   return { data, isLoading, raw };
 }
 
