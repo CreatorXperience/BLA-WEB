@@ -45,7 +45,9 @@ function toSlides(data?: unknown): HeroSlide[] {
         const images = (section.content?.images ?? [])
           .filter((u): u is string => typeof u === "string" && u.trim().length > 0)
           .map((u) => u.trim());
-        const sourceImages = images.length > 0 ? images : [section.content?.mediaUrl ?? IMAGERY.hero[0]];
+        const media = typeof section.content?.mediaUrl === "string" && section.content.mediaUrl.trim() ? section.content.mediaUrl.trim() : null;
+        const sourceImages = [...new Set([...(media ? [media] : []), ...images])];
+        if (sourceImages.length === 0) sourceImages.push(IMAGERY.hero[0]);
         return sourceImages.map((image, i) => ({
           id: `${(s as { id?: string }).id ?? Math.random().toString(36)}-${i}`,
           image,
