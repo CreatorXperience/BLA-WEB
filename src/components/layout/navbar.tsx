@@ -69,8 +69,8 @@ export function Navbar() {
             width={1536}
             height={1024}
             priority
-            className="h-8 w-auto md:h-9"
-            sizes="(min-width: 768px) 160px, 128px"
+            className="h-10 w-auto md:h-12"
+            sizes="(min-width: 768px) 192px, 160px"
           />
         </Link>
 

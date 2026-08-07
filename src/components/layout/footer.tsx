@@ -39,8 +39,8 @@ export function Footer() {
               alt="BLA"
               width={1536}
               height={1024}
-              className="h-8 w-auto"
-              sizes="160px"
+              className="h-10 w-auto"
+              sizes="200px"
             />
           </Link>
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-muted">
