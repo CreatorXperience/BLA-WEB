@@ -60,6 +60,8 @@ export function useAdminProductMutations() {
   const invalidate = () => {
     void qc.invalidateQueries({ queryKey: ["admin", "products"] });
     void qc.invalidateQueries({ queryKey: ["admin", "dashboard"] });
+    void qc.invalidateQueries({ queryKey: ["products"] });
+    void qc.invalidateQueries({ queryKey: ["collections"] });
   };
   return {
     create: useMutation({
