@@ -3,14 +3,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { IMAGERY } from "@/constants/imagery";
 import { useHomepage } from "@/hooks/use-catalog";
 
 export function EditorialBanner() {
   const { data } = useHomepage();
   const editorial = (data?.sections ?? []).find((s) => s.sectionType === "EDITORIAL");
 
-  const image = (editorial?.content?.mediaUrl as string) ?? IMAGERY.editorial[0];
+  const image = "/cut-design.jpg";
   const title = editorial?.title ?? "Considered by design.";
   const subtitle = editorial?.subtitle ?? "Every piece is designed in-house, cut in limited batches, and finished to last.";
   const ctaUrl = (editorial?.content?.ctaUrl as string) ?? "/about";
@@ -36,7 +35,7 @@ export function EditorialBanner() {
           transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-xl text-background"
         >
-          <p className="eyebrow mb-4 text-background/60">The Atelier</p>
+          <p className="eyebrow mb-4 text-background/60">Better Life Ahead</p>
           <h2 className="editorial-title text-background">{title}</h2>
           <p className="mt-6 max-w-md text-base leading-relaxed text-background/80">{subtitle}</p>
           <Link

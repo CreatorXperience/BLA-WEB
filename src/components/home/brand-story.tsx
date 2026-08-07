@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { IMAGERY } from "@/constants/imagery";
 import { SITE } from "@/constants/site";
 
 export function BrandStory() {
@@ -45,7 +44,7 @@ export function BrandStory() {
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           className="image-reveal relative aspect-[3/4] overflow-hidden bg-mist"
         >
-          <Image src={IMAGERY.editorial[0]} alt="Atelier craftsmanship" fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover" />
+          <Image src="/our-story1.jpg" alt="Atelier craftsmanship" fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover" />
         </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 28 }}
@@ -54,7 +53,7 @@ export function BrandStory() {
           transition={{ duration: 1, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
           className="image-reveal relative mt-8 aspect-[3/4] overflow-hidden bg-mist"
         >
-          <Image src={IMAGERY.editorial[1]} alt="Fabrics and finishes" fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover" />
+          <Image src="/our-story2.jpg" alt="Fabrics and finishes" fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover" />
         </motion.div>
       </div>
     </section>
