@@ -118,12 +118,12 @@ export function ProductClient() {
     <div className="container-lux py-10 md:py-16">
       <Breadcrumbs items={[{ label: "Shop", href: "/shop" }, { label: product.name }]} />
 
-      <div className="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-16">
+      <div className="mt-8 grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
         {/* Gallery */}
         <div>
-          <div className="grid grid-cols-[72px_1fr] gap-4">
+          <div className="grid grid-cols-[80px_1fr] gap-4 lg:grid-cols-[88px_1fr] lg:gap-5">
             {images.length > 1 ? (
-              <div className="no-scrollbar flex flex-col gap-3 overflow-y-auto">
+              <div className="no-scrollbar flex max-h-[640px] flex-col gap-3 overflow-y-auto lg:gap-4">
                 {images.map((img, i) => (
                   <button
                     key={img.id}
@@ -131,7 +131,7 @@ export function ProductClient() {
                     className={`relative aspect-[3/4] overflow-hidden border bg-mist transition-colors ${i === activeImage ? "border-ink" : "border-transparent"}`}
                     aria-label={`View image ${i + 1}`}
                   >
-                    <Image src={productImageUrl(img.url)} alt={img.altText ?? ""} fill sizes="72px" className="object-cover" />
+                    <Image src={productImageUrl(img.url)} alt={img.altText ?? ""} fill sizes="88px" className="object-cover" />
                   </button>
                 ))}
               </div>
@@ -141,7 +141,7 @@ export function ProductClient() {
               initial={{ opacity: 0.4 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
-              className="relative aspect-[4/5] cursor-zoom-in overflow-hidden bg-mist"
+              className="relative aspect-[4/5] cursor-zoom-in overflow-hidden bg-mist lg:aspect-[4/5]"
               onClick={() => setFullscreen(true)}
             >
               <Image
@@ -149,7 +149,7 @@ export function ProductClient() {
                 alt={product.name}
                 fill
                 priority
-                sizes="(min-width: 1024px) 50vw, 100vw"
+                sizes="(min-width: 1024px) 44vw, 100vw"
                 className="object-cover"
               />
               {images.length > 1 ? (
