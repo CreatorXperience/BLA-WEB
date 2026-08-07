@@ -85,7 +85,7 @@ const sectionSchema = z.object({
 
 type SectionValues = z.infer<typeof sectionSchema>;
 
-const IMAGE_SECTION_TYPES = new Set(["HERO_BANNER", "EDITORIAL", "PROMOTIONAL_BANNER"]);
+const IMAGE_SECTION_TYPES = new Set(["HERO_BANNER", "INSTAGRAM_GALLERY", "EDITORIAL", "PROMOTIONAL_BANNER"]);
 
 function HomepageSectionsTab() {
   const { data: sections, isLoading } = useCmsSections();

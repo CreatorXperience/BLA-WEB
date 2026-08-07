@@ -21,7 +21,7 @@ export function CollectionClient() {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading: loadingProducts } = useInfiniteQuery({
     queryKey: ["collection-products", slug],
     queryFn: ({ pageParam }) =>
-      collectionService.products(collection?.id ?? "", {
+      collectionService.products(collection?.slug ?? "", {
         limit: 24,
         cursor: pageParam as string | undefined,
       } as ProductQuery),
