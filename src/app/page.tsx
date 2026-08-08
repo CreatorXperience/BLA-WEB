@@ -1,3 +1,5 @@
+import { HydrationBoundary } from "@tanstack/react-query";
+import { prefetchHomepage } from "@/lib/cms-prefetch";
 import { Hero } from "@/components/home/hero";
 import { FeaturedCollections } from "@/components/home/featured-collections";
 import { FeaturedProducts, BestSellers, NewArrivals } from "@/components/home/product-rows";
@@ -6,19 +8,23 @@ import { BrandStory } from "@/components/home/brand-story";
 import { InstagramGallery } from "@/components/home/instagram-gallery";
 import { ErrorBoundary } from "@/components/shared/error-boundary";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { state } = await prefetchHomepage();
+
   return (
-    <div className="flex flex-col">
-      <Hero />
-      <ErrorBoundary>
-        <FeaturedCollections />
-        <FeaturedProducts />
-        <EditorialBanner />
-        <BestSellers />
-        <NewArrivals />
-        <BrandStory />
-        <InstagramGallery />
-      </ErrorBoundary>
-    </div>
+    <HydrationBoundary state={state}>
+      <div className="flex flex-col">
+        <Hero />
+        <ErrorBoundary>
+          <FeaturedCollections />
+          <FeaturedProducts />
+          <EditorialBanner />
+          <BestSellers />
+          <NewArrivals />
+          <BrandStory />
+          <InstagramGallery />
+        </ErrorBoundary>
+      </div>
+    </HydrationBoundary>
   );
 }
