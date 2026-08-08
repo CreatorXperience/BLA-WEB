@@ -226,8 +226,8 @@ export function ProductClient() {
           ) : null}
 
           {/* Quantity + CTAs */}
-          <div className="mt-10 flex items-center gap-4">
-            <div className="flex h-14 items-center border border-ink/20">
+          <div className="mt-10 flex flex-wrap items-center gap-4">
+            <div className="flex h-14 shrink-0 items-center border border-ink/20">
               <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="flex size-14 items-center justify-center hover:bg-line/60" aria-label="Decrease quantity">
                 <Minus className="size-4" />
               </button>
@@ -236,10 +236,10 @@ export function ProductClient() {
                 <Plus className="size-4" />
               </button>
             </div>
-            <Button size="lg" className="flex-1" onClick={addToCart} disabled={isUpdating || !inStock}>
+            <Button size="lg" className="min-w-[200px] flex-1" onClick={addToCart} disabled={isUpdating || !inStock}>
               {inStock ? "Add to Bag" : "Sold Out"}
             </Button>
-            <WishlistButton productId={product.id} className="size-14 border-ink/20" />
+            <WishlistButton productId={product.id} className="size-14 shrink-0 border-ink/20" />
           </div>
 
           <Button variant="outline" size="lg" className="mt-3 w-full" onClick={buyNow} disabled={!inStock}>
