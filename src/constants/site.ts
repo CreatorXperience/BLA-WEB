@@ -3,12 +3,15 @@ export const SITE = {
   tagline: "Best Life Ahead — luxury streetwear, quietly considered.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   apiUrl: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1",
-  email: "care@bla.example",
-  phone: "+234 800 000 0000",
+  email: "Ceobetterlifeahead@gmail.com",
+  phone: "+234 704 877 8736",
   address: "12 Admiralty Way, Lekki, Lagos, Nigeria",
   currency: "NGN",
   country: "NG",
   instagram: "https://instagram.com",
+  whatsapp: "https://wa.me/2347048778736",
+  snapchat: "https://snapchat.com/add/Uchenna_606",
+  tiktok: "https://tiktok.com/@betterlifeahead1",
 } as const;
 
 export const CART_TOKEN_KEY = "bla_cart_token";
