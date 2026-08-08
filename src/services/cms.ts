@@ -26,7 +26,7 @@ export const cmsService = {
   async contentPage<T>(key: string, fallback: T): Promise<T> {
     try {
       const all = await this.publicSettings();
-      const raw = all[`content.${key}`];
+      const raw = all[key];
       if (raw && typeof raw === "object") return raw as T;
     } catch {
       /* ignore, fall back */
