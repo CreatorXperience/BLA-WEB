@@ -112,7 +112,7 @@ export function Hero() {
 
   return (
     <section
-      className="relative h-[92vh] min-h-[560px] w-full overflow-hidden bg-ink"
+      className="relative w-full overflow-hidden bg-ink h-[60vh] min-h-[420px] sm:h-[72vh] md:h-[70vh] lg:h-[85vh] lg:min-h-[560px] xl:h-[92vh]"
       aria-label="Featured"
       onMouseEnter={pause}
       onMouseLeave={resume}
